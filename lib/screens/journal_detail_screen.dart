@@ -2,21 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:icejournal/blocs/journels_bloc.dart';
 import 'package:icejournal/models/journal.dart';
 
-class AddJournalView extends StatefulWidget {
-  AddJournalView({Key key, this.bloc, this.journal = null}) : super(key: key);
+class JournalDetailScreen extends StatefulWidget {
+  JournalDetailScreen({Key key, this.bloc, this.journal = null})
+      : super(key: key);
   final JournalBloc bloc;
   final Journal journal;
 
   @override
-  _AddJournalViewState createState() => _AddJournalViewState();
+  _JournalDetailScreenState createState() => _JournalDetailScreenState();
 }
 
-class _AddJournalViewState extends State<AddJournalView> {
-  final Journal _journal = Journal();
+class _JournalDetailScreenState extends State<JournalDetailScreen> {
+  Journal _journal;
+  final _formKey = GlobalKey<FormState>();
 
-  void save() {
-    if (widget.journal == null) {
+  @override
+  void initState() {
+    super.initState();
+    _journal = widget.journal ?? Journal();
+  }
+
+  void save(BuildContext context) {
+    if (widget.journal == null && _formKey.currentState.validate()) {
       widget.bloc.addEntry(_journal);
+      Navigator.of(context).pop();
+    } else if (!_formKey.currentState.validate()) {
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(content: Text("Form is not valid")));
+    } else {
+      Navigator.of(context).pop();
     }
   }
 
@@ -24,14 +38,14 @@ class _AddJournalViewState extends State<AddJournalView> {
     if (data.isEmpty) {
       return "Title Cannot be Empty";
     }
-    return '';
+    return null;
   }
 
   String validateContent(String data) {
     if (data.isEmpty) {
       return "Content Cannot be Empty";
     }
-    return '';
+    return null;
   }
 
   @override
@@ -41,6 +55,7 @@ class _AddJournalViewState extends State<AddJournalView> {
         title: Text("Journal Entry"),
       ),
       body: Form(
+          key: _formKey,
           child: SingleChildScrollView(
             child: Column(
               children: <Widget>[
@@ -60,18 +75,19 @@ class _AddJournalViewState extends State<AddJournalView> {
               ],
             ),
           )),
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: save,
-          label: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              Icon(Icons.save),
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text("Save"),
-              )
-            ],
-          )),
+      floatingActionButton: Builder(
+          builder: (context) => FloatingActionButton.extended(
+              onPressed: () => save(context),
+              label: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  Icon(Icons.save),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text("Save"),
+                  )
+                ],
+              ))),
     );
   }
 }

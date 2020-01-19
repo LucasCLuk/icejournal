@@ -3,7 +3,8 @@ class Journal {
   DateTime created, lastEdited;
   String mood;
 
-  String get subTitle => content.substring(0, 25);
+  String get subTitle =>
+      content?.substring(0, content.length > 20 ? 20 : content.length) ?? "";
 
   @override
   // TODO: implement hashCode
